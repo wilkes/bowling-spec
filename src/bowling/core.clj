@@ -31,6 +31,12 @@ rolled in tenth frame.
                                  :max-count 2)
                       #(<= (reduce + %) 10)))
 
+"ADDED: An open frame when a player doesn't knock down all 10 pins in two tries."
+(s/def ::open-frame (s/and (s/coll-of (s/int-in 0 (inc 9))
+                                      :kind vector?
+                                      :count 2)
+                           #(< (reduce + %) 10)))
+
 "A spare is when the player knocks down all 10 pins in two tries."
 (s/def ::spare-frame (s/and ::frame
                             #(= 10 (reduce + %))
