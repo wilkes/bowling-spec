@@ -25,12 +25,6 @@ rolled in tenth frame.
 (s/def ::game (s/coll-of ::frame :kind vector? :count 10))
 
 "In each frame the player has two opportunities to knock down 10 pins."
-(s/def ::base-frame (s/and (s/coll-of (s/int-in 0 (inc 10))
-                                      :kind vector?
-                                      :min-count 1
-                                      :max-count 2)
-                           #(<= (reduce + %) 10)))
-
 "ADDED: An open frame when a player doesn't knock down all 10 pins in two tries."
 (s/def ::open-frame (s/and (s/coll-of (s/int-in 0 (inc 9))
                                       :kind vector?
@@ -42,9 +36,9 @@ rolled in tenth frame.
             (s/gen (s/int-in 0 (inc 9)))))
 
 "A spare is when the player knocks down all 10 pins in two tries."
-(s/def ::spare-frame (s/with-gen (s/and ::base-frame
-                                        #(= 10 (reduce + %))
-                                        #(= 2 (count %)))
+(s/def ::spare-frame (s/with-gen (s/and (s/tuple (s/int-in 0 (inc 9))
+                                                 (s/int-in 1 (inc 10)))
+                                        #(= 10 (reduce + %)))
                                  spare-frame-gen))
 
 "A strike is when the player knocks down all 10 pins on his first try."
