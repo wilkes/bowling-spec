@@ -2,7 +2,10 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as gen]
             [clojure.spec.test.alpha :as stest]
-            [clojure.repl :refer [doc]]))
+            [clojure.repl :refer [doc]]
+            [pyro.printer :as pyro]))
+
+(pyro/swap-stacktrace-engine! {:ns-whitelist #"^bowling.*"})
 
 "
 The game consists of 10 frames.
@@ -51,10 +54,23 @@ rolled in tenth frame.
 "In the tenth frame a player who rolls a spare or strike is allowed to roll the
 extra balls to complete the frame. However no more than three balls can be
 rolled in tenth frame."
-(s/def ::tenth-frame (s/and (s/coll-of (s/int-in 0 (inc 10)))
-                            :kink vector?
-                            :min-count 2
-                            :max-count 3))
+(s/def ::tenth-frame (s/or :no-bonus ::open-frame
+                           :with-bonus (s/or
+                                         :spare (s/and (s/tuple (s/int-in 0 (inc 9))
+                                                                (s/int-in 0 (inc 10))
+                                                                (s/int-in 0 (inc 10)))
+                                                       (fn [[r1 r2 _r3]]
+                                                         (s/valid? ::spare-frame [r1 r2])))
+                                         :strike-strike (s/tuple #{10}
+                                                                 #{10}
+                                                                 (s/int-in 0 (inc 10)))
+                                         :strike (s/and (s/tuple #{10}
+                                                                 (s/int-in 0 (inc 9))
+                                                                 (s/int-in 0 (inc 10)))
+                                                        (fn [[_r1 r2 r3]]
+                                                          (s/valid? (s/or :spare ::spare-frame
+                                                                          :open ::open-frame)
+                                                                    [r2 r3]))))))
 
 "The score for the frame is the total number of pins knocked down, plus bonuses
 for strikes and spares."
