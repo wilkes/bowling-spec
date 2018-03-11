@@ -25,11 +25,11 @@ rolled in tenth frame.
 (s/def ::game (s/coll-of ::frame :kind vector? :count 10))
 
 "In each frame the player has two opportunities to knock down 10 pins."
-(s/def ::frame (s/and (s/coll-of (s/int-in 0 (inc 10))
-                                 :kind vector?
-                                 :min-count 1
-                                 :max-count 2)
-                      #(<= (reduce + %) 10)))
+(s/def ::base-frame (s/and (s/coll-of (s/int-in 0 (inc 10))
+                                      :kind vector?
+                                      :min-count 1
+                                      :max-count 2)
+                           #(<= (reduce + %) 10)))
 
 "ADDED: An open frame when a player doesn't knock down all 10 pins in two tries."
 (s/def ::open-frame (s/and (s/coll-of (s/int-in 0 (inc 9))
@@ -37,15 +37,22 @@ rolled in tenth frame.
                                       :count 2)
                            #(< (reduce + %) 10)))
 
+(defn spare-frame-gen []
+  (gen/fmap (fn [x] [x (- 10 x)])
+            (s/gen (s/int-in 0 (inc 9)))))
+
 "A spare is when the player knocks down all 10 pins in two tries."
-(s/def ::spare-frame (s/and ::frame
-                            #(= 10 (reduce + %))
-                            #(= 2 (count %))))
+(s/def ::spare-frame (s/with-gen (s/and ::base-frame
+                                        #(= 10 (reduce + %))
+                                        #(= 2 (count %)))
+                                 spare-frame-gen))
 
 "A strike is when the player knocks down all 10 pins on his first try."
-(s/def ::strike-frame (s/and ::frame
-                             #(= 10 (first %))
-                             #(= 2 (count %))))
+(s/def ::strike-frame #{[10]})
+
+(s/def ::frame (s/or :open ::open-frame
+                     :spare ::spare-frame
+                     :strike ::strike-frame))
 
 "In the tenth frame a player who rolls a spare or strike is allowed to roll the
 extra balls to complete the frame. However no more than three balls can be
