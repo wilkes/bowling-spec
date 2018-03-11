@@ -25,7 +25,17 @@ rolled in tenth frame.
 "
 
 "The game consists of 10 frames."
-(s/def ::game (s/coll-of ::frame :kind vector? :count 10))
+(s/def ::game (s/and (s/tuple ::frame
+                              ::frame
+                              ::frame
+                              ::frame
+                              ::frame
+                              ::frame
+                              ::frame
+                              ::frame
+                              ::frame
+                              ::tenth-frame)
+                     #(= 10 (count %)))) ;; gotta be a better way
 
 "In each frame the player has two opportunities to knock down 10 pins."
 "ADDED: An open frame when a player doesn't knock down all 10 pins in two tries."
