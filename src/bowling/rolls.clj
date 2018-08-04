@@ -37,10 +37,15 @@
     (cond
       (nil? r1) frames
       (= 10 r1) (recur (conj frames [r1]) rs)
-      :else (recur (conj frames [r1 (first rs)]) (rest rs)))))
+      :else (recur (conj frames [r1 (or (first rs) 0)]) (rest rs)))))
 
+(defn- gen-complete-frames-as-rolls []
+  (gen/fmap flatten
+            (s/gen (s/coll-of ::bowling/frame :min-count 1))))
 (s/fdef ->frames
-  :args (s/cat :rolls (s/coll-of (s/int-in 0 (inc 10))))
+  :args (s/cat :rolls (s/with-gen (s/coll-of (s/int-in 0 (inc 10)))
+                                  gen-complete-frames-as-rolls))
+
   :ret (s/coll-of ::bowling/frame))
 
 (defn score-frames [frames]
