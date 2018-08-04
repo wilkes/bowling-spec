@@ -2,10 +2,7 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as gen]
             [clojure.spec.test.alpha :as stest]
-            [clojure.repl :refer [doc]]
-            [pyro.printer :as pyro]))
-
-(pyro/swap-stacktrace-engine! {:ns-whitelist #"^bowling.*"})
+            [clojure.repl :refer [doc]]))
 
 "
 The game consists of 10 frames.
