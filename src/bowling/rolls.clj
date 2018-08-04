@@ -2,7 +2,11 @@
   (:require [bowling.spec :as bowling]
             [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as gen]
-            [clojure.spec.test.alpha :as stest]))
+            [clojure.spec.test.alpha :as stest]
+            [clojure.repl :refer [doc]]
+            [expound.alpha :as expound]))
+
+(set! s/*explain-out* expound/printer)
 
 (defn safe-sum [& xs]
   (transduce (keep identity) + xs))
@@ -37,8 +41,7 @@
 
 (s/fdef ->frames
   :args (s/cat :rolls (s/coll-of (s/int-in 0 (inc 10))))
-  :ret (s/coll-of ::bowling/frame)
-  :fn ())
+  :ret (s/coll-of ::bowling/frame))
 
 (defn score-frames [frames]
   (loop [scored [] [frame & remaining] frames]
@@ -64,11 +67,13 @@
     (assert (= 20 (score-game (repeat 20 1))))
     (assert (= 16 (score-game (into [5 5 3] (repeat 17 0)))))
     (assert (= 24 (score-game (into [10 3 4] (repeat 16 0)))))
-    (assert (= 30 (score-game (repeat 12 10)))))
+    (assert (= 300 (score-game (repeat 12 10)))))
 
   (-> 'bowling.rolls
       stest/enumerate-namespace
       stest/check
-      stest/summarize-results)
+      expound/explain-results)
+
+  (expound/explain-results (stest/check 'bowling.rolls/->frames))
 
   :end)
