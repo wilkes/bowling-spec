@@ -42,6 +42,19 @@
           (pos-int? ret)
           (zero? ret))))
 
+(s/def :git/sha string?)
+(s/def ::sha int?)
+
+(s/def ::a string?)
+(s/def ::b int?)
+(s/def ::c int?)
+(s/def ::d string?)
+(s/def ::my-map (s/keys :req [::a ::b ::c ::sha]
+                        :opt [::d :git/sha]))
+
+(comment
+  (s/exercise ::my-map)
+  :end)
 (comment
   (doc double-or-nothing)
   (s/exercise-fn `double-or-nothing)
